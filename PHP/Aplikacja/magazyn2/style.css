@@ -1,0 +1,41 @@
+body{
+	background-color:#ffff99;
+}
+div {
+	background-color:#ffffcc;
+	margin:10px 10px 10px 10px;
+}
+#Header{
+	height:100px;
+	text-align:center;
+	border:1px solid black;
+	width:900px;
+	margin-top:10px;
+	margin-left:300px;
+	margin-right:300px;
+}
+#Header h1{
+	color:000000;
+	font-size:32px;
+	margin-top:10px;
+}
+#Content{
+	margin-left:150px;
+	margin-right:150px;
+	margin-top:20px;
+	float:center;
+	border:1px solid black;
+	width:1200px;
+}
+#Content form{
+	margin-left:5px;
+}
+#Content h2{
+	margin-left:10px;
+	margin-right:10px;
+}
+#Content p{
+	text-align:justify;
+	margin-left:10px;
+	margin-right:10px;
+}

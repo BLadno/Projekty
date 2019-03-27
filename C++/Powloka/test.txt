@@ -1,0 +1,8 @@
+komunikat Witaj w przykladowej powloce
+pauza
+pwd
+ls
+stworz test
+nazwa test test2
+editOut test2
+wypisz test2

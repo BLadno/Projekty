@@ -1,0 +1,125 @@
+﻿drop table zadanie,przedmiot,lokalizacja,pracownik,pozycja,stan,kategorie;
+
+CREATE TABLE kategorie
+( 
+  id serial,
+  nazwa varchar(30),
+
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE stan
+(
+  id serial,
+  nazwa varchar(30) NOT NULL,
+  opis varchar(250),
+
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE pozycja
+(
+  id serial,
+  nazwa varchar(30) NOT NULL,
+  opis varchar(250),
+
+  PRIMARY KEY (id)
+);
+CREATE TABLE pracownik
+( 
+  id serial,
+  login varchar(30) NOT NULL UNIQUE,
+  haslo varchar(50) NOT NULL,
+  pozycja bigint unsigned NOT NULL,
+
+  PRIMARY KEY (id),
+  FOREIGN KEY (pozycja) REFERENCES pozycja(id)
+); 
+
+CREATE TABLE lokalizacja
+( 
+  id serial,
+  adres varchar(30) NOT NULL UNIQUE,
+
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE przedmiot
+(
+  id serial,
+  nazwa varchar(30),
+  opis varchar(250),
+  lokalizacja bigint unsigned,
+  kategoria bigint unsigned,
+
+  PRIMARY KEY (id),
+  FOREIGN KEY (kategoria) REFERENCES kategorie(id),
+  FOREIGN KEY (lokalizacja) REFERENCES lokalizacja(id)
+);
+
+CREATE TABLE zadanie
+(
+  id serial,
+  stworzony_przez bigint unsigned NOT NULL,
+  przydzielony_pracownikowi bigint unsigned,
+  przedmiot bigint unsigned NOT NULL,
+  lokalizacja_zadania bigint unsigned NOT NULL,
+  utworzony date,
+  przydzielony_harmonogram date,
+  stan bigint unsigned NOT NULL,     
+
+  PRIMARY KEY (id),
+  FOREIGN KEY (stan) REFERENCES stan(id),
+  FOREIGN KEY (lokalizacja_zadania) REFERENCES lokalizacja(id),
+  FOREIGN KEY (przedmiot) REFERENCES przedmiot(id),
+  FOREIGN KEY (stworzony_przez) REFERENCES pracownik(id),
+  FOREIGN KEY (przydzielony_pracownikowi) REFERENCES pracownik(id)
+);
+
+INSERT INTO pozycja (nazwa) values ('Administrator'),('Pracownik'),('Kierownik');
+
+INSERT INTO kategorie (nazwa) values ('Sprzęt komputerowy'),('RTV i AGD'),('Telefony i tablety'),('Gry'),('Oprogramowanie komputerowe'),
+('Sport i turystyka'),('Kosmetyki'),('Dla zwierzaka'),('Książki i muzyka'),('Budowa i remont');
+
+INSERT INTO stan (nazwa) values ('bezczynny'),('przydzielony pracownikowi'),('wykonany');
+
+INSERT INTO pracownik (login,haslo,pozycja) values ('admin','202cb962ac59075b964b07152d234b70',1),('pracownik','202cb962ac59075b964b07152d234b70',2),('kierownik','202cb962ac59075b964b07152d234b70',3);
+
+INSERT INTO lokalizacja (adres) values ('0-1-1'),('0-1-2'),('0-1-3'),('1-1-1'),('1-1-2');
+
+INSERT INTO przedmiot(nazwa,kategoria,lokalizacja) values ('Karta graficzna gtx 1080',1,1),('Karta graficzna gtx 1070',1,1),
+('Karta graficzna gtx 1060',1,1);
+
+INSERT INTO zadanie(stan,lokalizacja_zadania,przedmiot,stworzony_przez,przydzielony_pracownikowi) values (2,1,1,3,2);
+
+select u.id,u.login,u.haslo,u.pozycja,p.nazwa, p.opis from pracownik u, pozycja p where u.pozycja=p.id;
+
+CREATE OR REPLACE VIEW v_pracownicy AS
+select u.id,u.login,u.haslo,u.pozycja as "pozycja_id",p.nazwa as "pozycja", p.opis as "pozycja_opis" 
+from pracownik u, pozycja p 
+where u.pozycja=p.id;
+
+CREATE OR REPLACE VIEW v_przedmioty AS
+select p.id, p.nazwa, p.opis,
+p.lokalizacja as lokalizacja_id,l.adres,
+k.id as "kategoria_id",k.nazwa as "kategoria"
+from przedmiot p,kategorie k,lokalizacja l
+WHERE p.kategoria=k.id
+AND p.lokalizacja=l.id;
+
+CREATE OR REPLACE VIEW v_zadania AS
+select z.id, p.login as "stworzony_przez",p2.login as "przydzielony_pracownikowi",
+item.id as "id_przedmiotu",item.nazwa as "przedmiot", item.opis as "opis_przedmiotu", 
+item.kategoria as "kategoria_id", k.nazwa as "kategoria",
+item.lokalizacja as "adres_przedmiotu_id", l2.adres as "adres_przedmiotu",
+z.lokalizacja_zadania as "lokalizacja_zadania_id", l.adres as "lokalizacja_zadania",
+s.id as "stan_id", s.nazwa as "stan",
+z.utworzony, z.przydzielony_harmonogram
+from zadanie z, pracownik p, pracownik p2, przedmiot item, lokalizacja l, stan s, lokalizacja l2, kategorie k
+where p.id=z.stworzony_przez
+AND p2.id=z.przydzielony_pracownikowi
+AND item.id=z.przedmiot
+AND l.id=z.lokalizacja_zadania
+AND s.id=z.stan
+AND item.kategoria=k.id
+AND item.lokalizacja=l2.id;
